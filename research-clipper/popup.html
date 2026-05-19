@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Research Clipper</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #ffffff;
+      --surface: #f5f6f8;
+      --surface2: #eef0f3;
+      --border: #dde0e5;
+      --border2: #c8ccd4;
+      --text: #1a1d23;
+      --muted: #6b7280;
+      --accent: #2563eb;
+      --accent-dim: #dbeafe;
+      --green: #16a34a;
+      --green-dim: #dcfce7;
+      --red: #dc2626;
+      --red-dim: #fee2e2;
+      --mono: 'DM Mono', 'Fira Mono', monospace;
+      --sans: 'DM Sans', system-ui, sans-serif;
+    }
+
+    body {
+      width: 320px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 13px;
+    }
+
+    /* ── Header ── */
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 16px 12px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+    }
+    .header-icon {
+      width: 26px;
+      height: 26px;
+      background: var(--accent);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .header-icon svg { color: #fff; }
+    .header-title {
+      font-weight: 600;
+      font-size: 13px;
+      letter-spacing: 0.01em;
+    }
+    .header-sub {
+      font-size: 10px;
+      color: var(--muted);
+      margin-top: 1px;
+      font-family: var(--mono);
+    }
+
+    /* ── Tabs ── */
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+    }
+    .tab {
+      flex: 1;
+      padding: 8px 0;
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: var(--muted);
+      font-family: var(--sans);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s;
+      letter-spacing: 0.02em;
+    }
+    .tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+
+    /* ── Panel ── */
+    .panel { display: none; padding: 14px 16px; }
+    .panel.active { display: block; }
+
+    /* ── Patterns ── */
+    .section-label {
+      font-size: 10px;
+      font-family: var(--mono);
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 8px;
+    }
+    .pattern-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 10px;
+      max-height: 140px;
+      overflow-y: auto;
+    }
+    .pattern-list::-webkit-scrollbar { width: 4px; }
+    .pattern-list::-webkit-scrollbar-track { background: transparent; }
+    .pattern-list::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+    .pattern-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 5px 8px;
+    }
+    .pattern-row input {
+      flex: 1;
+      background: none;
+      border: none;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 11px;
+      outline: none;
+    }
+    .pattern-row input::placeholder { color: var(--border2); }
+    .pattern-row.active-row { border-color: var(--accent-dim); }
+    .pattern-del {
+      background: none;
+      border: none;
+      color: var(--border2);
+      cursor: pointer;
+      font-size: 14px;
+      line-height: 1;
+      padding: 0 2px;
+      transition: color 0.15s;
+      flex-shrink: 0;
+    }
+    .pattern-del:hover { color: var(--red); }
+
+    .add-row {
+      display: flex;
+      gap: 6px;
+    }
+    .add-input {
+      flex: 1;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 11px;
+      padding: 6px 8px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .add-input:focus { border-color: var(--accent); }
+    .add-input::placeholder { color: var(--border2); }
+    .btn-add {
+      background: var(--accent);
+      border: none;
+      border-radius: 6px;
+      color: #fff;
+      font-family: var(--sans);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 0 12px;
+      cursor: pointer;
+      transition: opacity 0.15s;
+      flex-shrink: 0;
+    }
+    .btn-add:hover { opacity: 0.85; }
+
+    .hint {
+      margin-top: 10px;
+      font-size: 10px;
+      color: var(--muted);
+      font-family: var(--mono);
+      line-height: 1.6;
+      border-top: 1px solid var(--border);
+      padding-top: 10px;
+    }
+    .hint strong { color: var(--text); }
+
+    /* ── Current page status ── */
+    .status-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 8px 10px;
+      margin-bottom: 12px;
+      font-size: 11px;
+      font-family: var(--mono);
+    }
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .status-dot.matched { background: var(--green); box-shadow: 0 0 6px var(--green); }
+    .status-dot.unmatched { background: var(--border2); }
+    .status-text { color: var(--muted); flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    /* ── Saved list ── */
+    .saved-list {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      max-height: 280px;
+      overflow-y: auto;
+    }
+    .saved-list::-webkit-scrollbar { width: 4px; }
+    .saved-list::-webkit-scrollbar-track { background: transparent; }
+    .saved-list::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+    .saved-item {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 8px 10px;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    .saved-item-body { flex: 1; min-width: 0; }
+    .saved-url {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--accent);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: block;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .saved-url:hover { text-decoration: underline; }
+    .saved-meta {
+      font-size: 10px;
+      font-family: var(--mono);
+      color: var(--muted);
+      margin-top: 3px;
+    }
+    .saved-meta .pattern-chip {
+      display: inline-block;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 0px 5px;
+      color: var(--muted);
+      font-size: 9px;
+      margin-left: 4px;
+    }
+    .saved-del {
+      background: none;
+      border: none;
+      color: var(--border2);
+      cursor: pointer;
+      font-size: 13px;
+      line-height: 1;
+      padding: 2px;
+      transition: color 0.15s;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .saved-del:hover { color: var(--red); }
+    .empty-state {
+      text-align: center;
+      padding: 28px 0;
+      color: var(--border2);
+      font-size: 12px;
+      font-family: var(--mono);
+      line-height: 1.8;
+    }
+    .empty-state .empty-icon { font-size: 24px; margin-bottom: 8px; opacity: 0.4; }
+
+    .saved-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .saved-count {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--muted);
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 2px 8px;
+    }
+    .btn-clear-all {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      color: var(--muted);
+      font-size: 10px;
+      font-family: var(--mono);
+      padding: 3px 8px;
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .btn-clear-all:hover { color: var(--red); border-color: var(--red-dim); }
+
+    /* Export button */
+    .btn-export {
+      width: 100%;
+      margin-top: 10px;
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 10px;
+      padding: 7px 0;
+      cursor: pointer;
+      letter-spacing: 0.05em;
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .btn-export:hover { border-color: var(--accent-dim); color: var(--accent); }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-icon">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/>
+    </svg>
+  </div>
+  <div>
+    <div class="header-title">Research Clipper</div>
+    <div class="header-sub">url pattern matcher</div>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" data-tab="patterns">Patterns</button>
+  <button class="tab" data-tab="saved">Saved URLs</button>
+</div>
+
+<!-- Patterns Tab -->
+<div class="panel active" id="tab-patterns">
+  <div class="section-label">Active patterns</div>
+  <div class="pattern-list" id="pattern-list"></div>
+  <div class="add-row">
+    <input class="add-input" id="new-pattern" placeholder="e.g. youtube.com/watch?v=" />
+    <button class="btn-add" id="btn-add">Add</button>
+  </div>
+  <div class="hint">
+    <strong>How it works:</strong> When you visit any URL containing a pattern,
+    a widget appears on the page letting you save or unsave that URL.
+    Wildcards not needed — substring match is used.
+  </div>
+</div>
+
+<!-- Saved Tab -->
+<div class="panel" id="tab-saved">
+  <div id="current-status" class="status-bar">
+    <div class="status-dot unmatched" id="status-dot"></div>
+    <span class="status-text" id="status-text">loading…</span>
+  </div>
+
+  <div class="saved-header">
+    <div class="section-label" style="margin:0">Clipped URLs</div>
+    <div style="display:flex;gap:6px;align-items:center">
+      <span class="saved-count" id="saved-count">0</span>
+      <button class="btn-clear-all" id="btn-clear-all">clear all</button>
+    </div>
+  </div>
+
+  <div class="saved-list" id="saved-list"></div>
+  <button class="btn-export" id="btn-export">⬇ export as JSON</button>
+</div>
+
+<script src="popup.js"></script>
+</body>
+</html>
