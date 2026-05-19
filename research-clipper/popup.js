@@ -165,18 +165,45 @@ document.getElementById("btn-clear-all").addEventListener("click", () => {
 });
 
 // Export JSON
-document.getElementById("btn-export").addEventListener("click", () => {
+document.getElementById("btn-export-json").addEventListener("click", () => {
   chrome.runtime.sendMessage({ type: "GET_SAVED" }, (res) => {
     const data = JSON.stringify(res?.saved || [], null, 2);
-    const blob = new Blob([data], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `research-clipper-${Date.now()}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
+    triggerDownload(data, "application/json", `research-clipper-${Date.now()}.json`);
   });
 });
+
+// Export CSV
+document.getElementById("btn-export-csv").addEventListener("click", () => {
+  chrome.runtime.sendMessage({ type: "GET_SAVED" }, (res) => {
+    const saved = res?.saved || [];
+    const rows = [
+      ["url", "pattern", "savedAt", "savedAtReadable"],
+      ...saved.map((s) => [
+        csvCell(s.url),
+        csvCell(s.pattern || ""),
+        s.savedAt,
+        csvCell(new Date(s.savedAt).toISOString()),
+      ]),
+    ];
+    const csv = rows.map((r) => r.join(",")).join("\r\n");
+    triggerDownload(csv, "text/csv", `research-clipper-${Date.now()}.csv`);
+  });
+});
+
+function triggerDownload(content, mimeType, filename) {
+  const blob = new Blob([content], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function csvCell(val) {
+  // Wrap in quotes and escape any internal quotes
+  return `"${String(val).replace(/"/g, '""')}"`;
+}
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
 function escapeHtml(str) {

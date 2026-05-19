@@ -318,10 +318,14 @@
     }
     .btn-clear-all:hover { color: var(--red); border-color: var(--red-dim); }
 
-    /* Export button */
-    .btn-export {
-      width: 100%;
+    /* Export buttons */
+    .export-row {
+      display: flex;
+      gap: 6px;
       margin-top: 10px;
+    }
+    .btn-export {
+      flex: 1;
       background: none;
       border: 1px solid var(--border);
       border-radius: 6px;
@@ -333,7 +337,7 @@
       letter-spacing: 0.05em;
       transition: border-color 0.15s, color 0.15s;
     }
-    .btn-export:hover { border-color: var(--accent-dim); color: var(--accent); }
+    .btn-export:hover { border-color: var(--accent); color: var(--accent); }
   </style>
 </head>
 <body>
@@ -386,7 +390,10 @@
   </div>
 
   <div class="saved-list" id="saved-list"></div>
-  <button class="btn-export" id="btn-export">⬇ export as JSON</button>
+  <div class="export-row">
+    <button class="btn-export" id="btn-export-json">⬇ JSON</button>
+    <button class="btn-export" id="btn-export-csv">⬇ CSV</button>
+  </div>
 </div>
 
 <script src="popup.js"></script>
