@@ -64,7 +64,9 @@ REVIEW_TERMS = [
     #"best",
     #"review",
     #"unboxing",
+    
     "comparison",
+    
     #"setup",
     #"gear",
     #"kit",
@@ -79,6 +81,7 @@ REVIEW_TERMS = [
 
 PRODUCT_TERMS = [
     #"camera gear",
+    
     "podcast microphone",
     "streaming setup",
     "bike gear",
@@ -208,7 +211,7 @@ def get_conn():
 
 def init_db():
     sql = """
-    CREATE TABLE IF NOT EXISTS youtube_product_review_videos (
+    CREATE TABLE IF NOT EXISTS youtube_videos (
         video_id TEXT PRIMARY KEY,
         title TEXT,
         description TEXT,
@@ -229,20 +232,20 @@ def init_db():
         updated_at TIMESTAMPTZ DEFAULT NOW()
     );
 
-    ALTER TABLE youtube_product_review_videos
+    ALTER TABLE youtube_videos
         ADD COLUMN IF NOT EXISTS link_intent_score INTEGER;
 
     CREATE INDEX IF NOT EXISTS idx_youtube_reviews_published_at
-        ON youtube_product_review_videos (published_at);
+        ON youtube_videos (published_at);
 
     CREATE INDEX IF NOT EXISTS idx_youtube_reviews_view_count
-        ON youtube_product_review_videos (view_count);
+        ON youtube_videos (view_count);
 
     CREATE INDEX IF NOT EXISTS idx_youtube_reviews_viral_score
-        ON youtube_product_review_videos (viral_score);
+        ON youtube_videos (viral_score);
 
     CREATE INDEX IF NOT EXISTS idx_youtube_reviews_link_intent_score
-        ON youtube_product_review_videos (link_intent_score);
+        ON youtube_videos (link_intent_score);
     """
 
     with get_conn() as conn:
@@ -275,7 +278,7 @@ def test_db_upsert():
     with get_conn() as conn:
         with conn.cursor() as cur:
             cur.execute(
-                "DELETE FROM youtube_product_review_videos WHERE video_id = %s",
+                "DELETE FROM youtube_videos WHERE video_id = %s",
                 ("TEST_VIDEO_ID",)
             )
 
@@ -530,7 +533,7 @@ def upsert_videos(videos, query_source):
         return 0
 
     sql = """
-	INSERT INTO youtube_product_review_videos (
+	INSERT INTO youtube_videos (
 	    video_id,
 	    title,
 	    description,
@@ -561,11 +564,11 @@ def upsert_videos(videos, query_source):
         duration = EXCLUDED.duration,
         query_source =
             CASE
-                WHEN youtube_product_review_videos.query_source IS NULL
+                WHEN youtube_videos.query_source IS NULL
                     THEN EXCLUDED.query_source
-                WHEN youtube_product_review_videos.query_source = EXCLUDED.query_source
-                    THEN youtube_product_review_videos.query_source
-                ELSE youtube_product_review_videos.query_source || '; ' || EXCLUDED.query_source
+                WHEN youtube_videos.query_source = EXCLUDED.query_source
+                    THEN youtube_videos.query_source
+                ELSE youtube_videos.query_source || '; ' || EXCLUDED.query_source
             END,
         url = EXCLUDED.url,
         views_per_day = EXCLUDED.views_per_day,
